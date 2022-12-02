@@ -14,10 +14,18 @@ func main() {
 	address := fmt.Sprintf("%s:%s", host, port)
 	con, err := net.Dial("tcp", address)
 
-	checkErr(err)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 	log.Printf("Connected to %s (%s)", address, con.RemoteAddr())
 
-	defer con.Close()
+	defer func(con net.Conn) {
+		errC := con.Close()
+		if errC != nil {
+			log.Fatal(errC)
+		}
+	}(con)
 }
 func parseHostAndPort(args []string) (host, port string) {
 	host = args[0]
@@ -32,10 +40,4 @@ func parseHostAndPort(args []string) (host, port string) {
 		}
 	}
 	return
-}
-
-func checkErr(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
